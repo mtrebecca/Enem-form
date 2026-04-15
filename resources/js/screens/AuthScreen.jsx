@@ -48,10 +48,10 @@ export default function AuthScreen({
 
       <div className="mt-4 flex justify-between text-sm">
         <button type="button" className={s.linkMuted} onClick={onToggleAuthMode}>
-          {authMode === 'login' ? 'Criar conta' : 'Ja tenho conta'}
+          {authMode === 'login' ? 'Criar conta' : 'Já tenho conta'}
         </button>
         <button type="button" className={s.linkMuted} onClick={onForgotPassword}>
-          Esqueci senha
+          Esqueci minha senha
         </button>
       </div>
     </section>

@@ -14,7 +14,7 @@ class AuthEndpointsTest extends TestCase
         $this->postJson('/api/auth/register', [
             'nome' => 'Joao',
             'email' => 'joao@enem.dev',
-            'senha' => '123456',
+            'senha' => 'Joao1234',
         ])
             ->assertStatus(201)
             ->assertJsonPath('message', 'Usuario cadastrado com sucesso');
@@ -22,7 +22,7 @@ class AuthEndpointsTest extends TestCase
 
     public function test_cadastro_email_duplicado_retorna_422(): void
     {
-        $payload = ['nome' => 'A', 'email' => 'dup@enem.dev', 'senha' => '123456'];
+        $payload = ['nome' => 'A', 'email' => 'dup@enem.dev', 'senha' => 'Senha123'];
 
         $this->postJson('/api/auth/register', $payload)->assertCreated();
         $this->postJson('/api/auth/register', $payload)
@@ -32,9 +32,10 @@ class AuthEndpointsTest extends TestCase
 
     public function test_cadastro_sem_email_retorna_422(): void
     {
-        $this->postJson('/api/auth/register', ['nome' => 'X', 'senha' => '123456'])
+        $this->postJson('/api/auth/register', ['nome' => 'X', 'senha' => 'Senha123'])
             ->assertStatus(422)
-            ->assertJsonPath('message', 'Email e obrigatorio.');
+            ->assertJsonPath('message', 'Dados invalidos.')
+            ->assertJsonPath('error.code', 'VALIDATION_ERROR');
     }
 
     public function test_login_credenciais_validas_retorna_token_e_utilizador(): void
@@ -80,7 +81,14 @@ class AuthEndpointsTest extends TestCase
 
     public function test_logout_retorna_200_e_mensagem(): void
     {
-        $this->postJson('/api/auth/logout')
+        $this->popularBaseComDemoEnem();
+
+        $token = $this->postJson('/api/auth/login', [
+            'email' => self::USUARIO_DEMO_EMAIL,
+            'senha' => self::USUARIO_DEMO_SENHA,
+        ])->assertOk()->json('token');
+
+        $this->postJson('/api/auth/logout', [], ['Authorization' => "Bearer {$token}"])
             ->assertOk()
             ->assertJsonPath('message', 'Logout realizado com sucesso');
     }

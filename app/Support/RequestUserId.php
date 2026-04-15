@@ -9,11 +9,10 @@ final class RequestUserId
 {
     public static function require(Request $request): int
     {
-        $raw = $request->header('X-User-Id', '');
-        $id = is_numeric($raw) ? (int) $raw : 0;
+        $id = (int) ($request->user()?->id ?? 0);
 
         if ($id < 1) {
-            throw new HttpException(401, 'Envie o header X-User-Id com o id do usuario autenticado.');
+            throw new HttpException(401, 'Token de autenticacao invalido ou ausente.');
         }
 
         return $id;

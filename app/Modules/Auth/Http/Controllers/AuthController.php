@@ -2,6 +2,9 @@
 
 namespace App\Modules\Auth\Http\Controllers;
 
+use App\Modules\Auth\Http\Requests\ForgotPasswordRequest;
+use App\Modules\Auth\Http\Requests\LoginRequest;
+use App\Modules\Auth\Http\Requests\RegisterRequest;
 use App\Modules\Auth\Results\ForgotPasswordOutcome;
 use App\Modules\Auth\Results\LoginOutcome;
 use App\Modules\Auth\Results\RegisterOutcome;
@@ -13,20 +16,20 @@ class AuthController
 {
     public function __construct(private readonly AuthService $authService) {}
 
-    public function register(Request $request): JsonResponse
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $attempt = $this->authService->register($request->all());
+        $attempt = $this->authService->register($request->validated());
         $status = match ($attempt->outcome) {
             RegisterOutcome::Success => 201,
-            RegisterOutcome::EmailRequired, RegisterOutcome::EmailTaken => 422,
+            RegisterOutcome::EmailTaken => 422,
         };
 
         return response()->json($attempt->toResponseBody(), $status);
     }
 
-    public function login(Request $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
-        $attempt = $this->authService->login($request->all());
+        $attempt = $this->authService->login($request->validated());
         $status = match ($attempt->outcome) {
             LoginOutcome::Success => 200,
             LoginOutcome::InvalidCredentials => 401,
@@ -35,14 +38,14 @@ class AuthController
         return response()->json($attempt->toResponseBody(), $status);
     }
 
-    public function logout(): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
-        return response()->json($this->authService->logout());
+        return response()->json($this->authService->logout($request->user()));
     }
 
-    public function forgotPassword(Request $request): JsonResponse
+    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
-        $attempt = $this->authService->forgotPassword($request->all());
+        $attempt = $this->authService->forgotPassword($request->validated());
         $status = match ($attempt->outcome) {
             ForgotPasswordOutcome::Sent => 200,
             ForgotPasswordOutcome::EmailNotFound => 404,

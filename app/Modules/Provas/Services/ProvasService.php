@@ -6,43 +6,26 @@ use App\Modules\Provas\Models\Prova;
 use App\Modules\Provas\Models\Questao;
 use App\Modules\Provas\Models\SessaoProva;
 use App\Modules\Provas\Support\QuestaoApiPresenter;
+use App\Support\ActiveProvasCatalog;
+use App\Support\DomainException;
+use App\Support\QuestaoRespostaEvaluator;
 
 class ProvasService
 {
     public function __construct(
         private readonly ProvaFinalizacaoService $finalizacao,
+        private readonly ActiveProvasCatalog $catalog,
+        private readonly QuestaoRespostaEvaluator $respostaEvaluator,
     ) {}
 
     public function listar(): array
     {
-        $provas = $this->queryProvasSimuladoNoDashboard()->orderBy('id')->get();
-        if ($provas->isEmpty()) {
-            return [];
-        }
-
-        $ids = $provas->pluck('id')->all();
-        $disciplinasPorProva = Questao::query()
-            ->select('prova_id', 'disciplina')
-            ->whereIn('prova_id', $ids)
-            ->distinct()
-            ->orderBy('disciplina')
-            ->get()
-            ->groupBy('prova_id')
-            ->map(fn ($grupo) => $grupo->pluck('disciplina')->unique()->values()->all());
-
-        return $provas
-            ->map(fn (Prova $prova): array => $this->formatProvaResumo($prova, $disciplinasPorProva->get($prova->id, [])))
-            ->values()
-            ->all();
+        return $this->catalog->listar();
     }
 
     public function detalhe(int $id): ?array
     {
-        $prova = $this->queryProvasSimuladoNoDashboard()
-            ->where('id', $id)
-            ->first();
-
-        return $prova ? $this->formatProvaResumo($prova) : null;
+        return $this->catalog->detalhe($id);
     }
 
     public function iniciarRespostaApi(int $provaId, int $userId, array $expand, int $perPage): array
@@ -68,11 +51,8 @@ class ProvasService
 
     public function iniciar(int $provaId, int $userId): array
     {
-        $prova = $this->queryProvasSimuladoNoDashboard()
-            ->where('id', $provaId)
-            ->first();
-        if (! $prova) {
-            abort(404, 'Prova nao encontrada ou inativa.');
+        if (! $this->catalog->existeNoDashboard($provaId)) {
+            throw new DomainException('Prova nao encontrada ou inativa.', 404, 'HTTP_404');
         }
 
         $existente = SessaoProva::query()
@@ -98,8 +78,8 @@ class ProvasService
 
     public function questoes(int $provaId, int $page = 1, int $perPage = 2): array
     {
-        if (! $this->queryProvasSimuladoNoDashboard()->where('id', $provaId)->exists()) {
-            abort(404, 'Prova nao encontrada.');
+        if (! $this->catalog->existeNoDashboard($provaId)) {
+            throw new DomainException('Prova nao encontrada.', 404, 'HTTP_404');
         }
 
         $perPage = max(1, min($perPage, 3));
@@ -130,19 +110,19 @@ class ProvasService
         $questaoId = (int) ($payload['questao_id'] ?? 0);
         $questao = Questao::query()->where('prova_id', $provaId)->where('id', $questaoId)->first();
         if (! $questao) {
-            abort(422, 'Questao invalida para esta prova.');
+            throw new DomainException('Questao invalida para esta prova.');
         }
 
-        $escolha = $this->resolverAlternativa($questao, $payload);
+        $escolha = $this->respostaEvaluator->avaliar($questao, $payload);
         if (! $escolha) {
-            abort(422, 'Opcao de resposta invalida.');
+            throw new DomainException('Opcao de resposta invalida.');
         }
 
         $mapa = $sessao->respostas ?? [];
         $mapa[(string) $questaoId] = $escolha['texto'];
         $sessao->update(['respostas' => $mapa]);
 
-        return $this->jsonRespostaQuestao('Resposta salva com sucesso', $questaoId, $escolha, $questao->opcoes ?? []);
+        return $this->respostaEvaluator->jsonRespostaQuestao('Resposta salva com sucesso', $questaoId, $escolha);
     }
 
     public function finalizar(int $provaId, int $userId): ?array
@@ -159,41 +139,15 @@ class ProvasService
     {
         $questao = Questao::query()->find($questaoId);
         if (! $questao || ! $this->questaoPertenceAoPoolTreino($questao)) {
-            abort(404, 'Questao nao encontrada para treino.');
+            throw new DomainException('Questao nao encontrada para treino.', 404, 'HTTP_404');
         }
 
-        $escolha = $this->resolverAlternativa($questao, $payload);
+        $escolha = $this->respostaEvaluator->avaliar($questao, $payload);
         if (! $escolha) {
-            abort(422, 'Opcao de resposta invalida.');
+            throw new DomainException('Opcao de resposta invalida.');
         }
 
-        return $this->jsonRespostaQuestao('Resposta avaliada', $questaoId, $escolha, $questao->opcoes ?? []);
-    }
-
-    private function queryProvasSimuladoNoDashboard()
-    {
-        return Prova::query()
-            ->where('status', 'ativo')
-            ->where(function ($q): void {
-                $q->whereNull('tipo')->orWhere('tipo', 'simulado');
-            });
-    }
-
-    private function formatProvaResumo(Prova $prova, ?array $disciplinas = null): array
-    {
-        $disciplinas ??= $prova->questoes()
-            ->select('disciplina')
-            ->distinct()
-            ->pluck('disciplina')
-            ->values()
-            ->all();
-
-        return [
-            'id' => $prova->id,
-            'titulo' => $prova->titulo,
-            'status' => $prova->status,
-            'disciplinas' => $disciplinas,
-        ];
+        return $this->respostaEvaluator->jsonRespostaQuestao('Resposta avaliada', $questaoId, $escolha);
     }
 
     private function formatSessao(SessaoProva $sessao): array
@@ -207,52 +161,6 @@ class ProvasService
         ];
     }
 
-    private function indiceAlternativaCorreta(array $opcoes): ?int
-    {
-        foreach ($opcoes as $indice => $op) {
-            if (! empty($op['correta'])) {
-                return (int) $indice;
-            }
-        }
-
-        return null;
-    }
-
-    private function resolverAlternativa(Questao $questao, array $payload): ?array
-    {
-        $opcoes = $questao->opcoes ?? [];
-        if ($opcoes === []) {
-            return null;
-        }
-
-        if (array_key_exists('opcao_id', $payload) && $payload['opcao_id'] !== '' && $payload['opcao_id'] !== null) {
-            $indice = (int) $payload['opcao_id'];
-            if (! isset($opcoes[$indice])) {
-                return null;
-            }
-            $op = $opcoes[$indice];
-
-            return [
-                'texto' => $op['texto'],
-                'correta' => (bool) $op['correta'],
-                'indice' => $indice,
-            ];
-        }
-
-        $texto = trim((string) ($payload['resposta'] ?? ''));
-        foreach ($opcoes as $indice => $op) {
-            if ($op['texto'] === $texto) {
-                return [
-                    'texto' => $op['texto'],
-                    'correta' => (bool) $op['correta'],
-                    'indice' => $indice,
-                ];
-            }
-        }
-
-        return null;
-    }
-
     private function sessaoEmAndamento(int $userId, int $provaId): ?SessaoProva
     {
         return SessaoProva::query()
@@ -260,20 +168,6 @@ class ProvasService
             ->where('prova_id', $provaId)
             ->where('status', 'em_andamento')
             ->first();
-    }
-
-    private function jsonRespostaQuestao(string $message, int $questaoId, array $escolha, array $opcoes): array
-    {
-        return [
-            'message' => $message,
-            'questao_id' => $questaoId,
-            'opcao_id' => $escolha['indice'],
-            'texto' => $escolha['texto'],
-            'feedback' => [
-                'acertou' => $escolha['correta'],
-                'gabarito_opcao_id' => $this->indiceAlternativaCorreta($opcoes),
-            ],
-        ];
     }
 
     private function questaoPertenceAoPoolTreino(Questao $questao): bool

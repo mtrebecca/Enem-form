@@ -1,9 +1,9 @@
-const USER_ID_KEY = 'enem_user_id';
+const AUTH_TOKEN_KEY = 'enem_auth_token';
 
-export const userIdStorage = {
-  get: () => localStorage.getItem(USER_ID_KEY),
-  set: (id) => localStorage.setItem(USER_ID_KEY, String(id)),
-  clear: () => localStorage.removeItem(USER_ID_KEY),
+export const authTokenStorage = {
+  get: () => localStorage.getItem(AUTH_TOKEN_KEY),
+  set: (token) => localStorage.setItem(AUTH_TOKEN_KEY, String(token)),
+  clear: () => localStorage.removeItem(AUTH_TOKEN_KEY),
 };
 
 export function isAbortError(err) {
@@ -13,14 +13,18 @@ export function isAbortError(err) {
 export async function api(url, options = {}) {
   const { signal, headers: hdr = {}, ...rest } = options;
   const headers = { 'Content-Type': 'application/json', ...hdr };
-  const uid = userIdStorage.get();
-  if (uid) headers['X-User-Id'] = uid;
+  const token = authTokenStorage.get();
+  if (token) headers.Authorization = `Bearer ${token}`;
 
   const response = await fetch(url, { ...rest, headers, signal });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || 'Erro inesperado na requisicao.');
+  if (response.status === 204) {
+    return null;
   }
-  return data;
+  const contentType = response.headers.get('content-type') ?? '';
+  const hasJsonBody = contentType.includes('application/json');
+  const data = hasJsonBody ? await response.json() : null;
+  if (!response.ok) {
+    throw new Error(data?.message || 'Erro inesperado na requisicao.');
+  }
+  return data ?? {};
 }

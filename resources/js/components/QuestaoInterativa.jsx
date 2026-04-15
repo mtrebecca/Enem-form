@@ -7,7 +7,7 @@ export default function QuestaoInterativa({ s, questao, feedbackMap, respostasMa
     <article className={s.innerCard}>
       <p className={`mb-1 text-xs font-medium uppercase tracking-wide ${s.muted}`}>{questao.disciplina}</p>
       <p className={`mb-3 text-sm ${s.sub}`}>{questao.enunciado}</p>
-      {questao.fonte && <p className={`mb-3 text-xs italic ${s.muted}`}>Referencia: {questao.fonte}</p>}
+      {questao.fonte && <p className={`mb-3 text-xs italic ${s.muted}`}>Referência: {questao.fonte}</p>}
       <div className="flex flex-col gap-2">
         {questao.opcoes.map((opcao) => (
           <button

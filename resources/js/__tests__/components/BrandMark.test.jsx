@@ -14,6 +14,6 @@ describe('BrandMark', () => {
 
   it('mostra o subtítulo', () => {
     const { container } = render(<BrandMark isDark />);
-    expect(findParagrafo(container, 'preparacao enem')).toBeTruthy();
+    expect(findParagrafo(container, 'preparação enem')).toBeTruthy();
   });
 });

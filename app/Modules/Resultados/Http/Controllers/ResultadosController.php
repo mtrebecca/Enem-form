@@ -3,6 +3,7 @@
 namespace App\Modules\Resultados\Http\Controllers;
 
 use App\Modules\Resultados\Services\ResultadosService;
+use App\Support\DomainException;
 use App\Support\RequestUserId;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,8 +17,8 @@ class ResultadosController
         $userId = RequestUserId::require($request);
         $resultado = $this->resultadosService->porProva($provaId, $userId);
 
-        if (!$resultado) {
-            return response()->json(['message' => 'Resultado nao encontrado para esta prova'], 404);
+        if (! $resultado) {
+            throw new DomainException('Resultado nao encontrado para esta prova', 404, 'HTTP_404');
         }
 
         return response()->json($resultado);

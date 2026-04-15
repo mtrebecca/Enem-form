@@ -3,25 +3,21 @@ import QuestaoInterativa from '../components/QuestaoInterativa';
 
 export default function ProvaScreen({
   s,
-  provaAtual,
-  questoes,
-  questoesMeta,
   loading,
-  feedbackPorQuestao,
-  respostas,
+  flow,
   onBackDashboard,
-  responder,
-  carregarPaginaQuestoes,
-  finalizarProva,
+  onFinalizarProva,
 }) {
+  const { provaAtual, questoes, questoesMeta, feedbackPorQuestao, respostas, responder, carregarPaginaQuestoes } = flow;
+
   return (
     <section className={s.card}>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold">{provaAtual.titulo}</h2>
           <p className={`text-sm ${s.muted}`}>
-            Modo estudo: ao marcar uma alternativa, voce ve na hora se acertou e o gabarito fica destacado em verde. No Enem real nao ha esse
-            retorno — aqui o foco e aprender. Pode mudar de pagina sem marcar; em branco conta como erro ao finalizar.
+            Modo estudo: ao marcar uma alternativa, você vê na hora se acertou e o gabarito fica destacado em verde. No Enem real não há esse
+            retorno — aqui o foco é aprender. Pode mudar de página sem marcar; em branco conta como erro ao finalizar.
           </p>
         </div>
         <button type="button" className={s.btnGhost} onClick={onBackDashboard}>
@@ -44,7 +40,7 @@ export default function ProvaScreen({
 
       <div className={s.pagerBar}>
         <p className={s.muted}>
-          Pagina {questoesMeta.page} de {questoesMeta.total_pages} ({questoesMeta.total} questoes)
+          Página {questoesMeta.page} de {questoesMeta.total_pages} ({questoesMeta.total} questões)
         </p>
         <div className="flex gap-2">
           <button
@@ -61,14 +57,13 @@ export default function ProvaScreen({
             disabled={loading || questoesMeta.page >= questoesMeta.total_pages}
             onClick={() => carregarPaginaQuestoes(questoesMeta.page + 1)}
           >
-            Proxima
+            Próxima questão
+          </button>
+          <button type="button" className={s.btnPrimary} onClick={onFinalizarProva} disabled={loading}>
+            {loading ? 'Finalizando...' : 'Finalizar prova'}
           </button>
         </div>
       </div>
-
-      <button type="button" className={`${s.btnPrimary} mt-6`} onClick={finalizarProva} disabled={loading}>
-        {loading ? 'Finalizando...' : 'Finalizar prova'}
-      </button>
     </section>
   );
 }

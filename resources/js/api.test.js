@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { api, userIdStorage } from './api';
+import { api, authTokenStorage } from './api';
 
-const KEY = 'enem_user_id';
+const KEY = 'enem_auth_token';
 
 describe('api()', () => {
   afterEach(() => {
@@ -9,14 +9,16 @@ describe('api()', () => {
     vi.unstubAllGlobals();
   });
 
-  it('envia X-User-Id quando há id guardado', async () => {
+  it('envia Authorization Bearer quando ha token guardado', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
+      status: 200,
+      headers: { get: () => 'application/json' },
       json: async () => ({ ok: true }),
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    userIdStorage.set(42);
+    authTokenStorage.set('token-abc');
     await api('/api/dashboard');
 
     expect(fetchMock).toHaveBeenCalledWith(
@@ -24,7 +26,7 @@ describe('api()', () => {
       expect.objectContaining({
         headers: expect.objectContaining({
           'Content-Type': 'application/json',
-          'X-User-Id': '42',
+          Authorization: 'Bearer token-abc',
         }),
       }),
     );
@@ -35,6 +37,8 @@ describe('api()', () => {
       'fetch',
       vi.fn().mockResolvedValue({
         ok: false,
+        status: 401,
+        headers: { get: () => 'application/json' },
         json: async () => ({ message: 'Falhou' }),
       }),
     );
@@ -45,6 +49,8 @@ describe('api()', () => {
   it('encaminha signal ao fetch', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
+      status: 200,
+      headers: { get: () => 'application/json' },
       json: async () => ({ ok: true }),
     });
     vi.stubGlobal('fetch', fetchMock);
@@ -56,5 +62,19 @@ describe('api()', () => {
       '/api/dashboard',
       expect.objectContaining({ signal: ac.signal }),
     );
+  });
+
+  it('retorna null para resposta 204 sem tentar parsear json', async () => {
+    const jsonMock = vi.fn();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 204,
+      headers: { get: () => null },
+      json: jsonMock,
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(api('/api/auth/logout', { method: 'POST' })).resolves.toBeNull();
+    expect(jsonMock).not.toHaveBeenCalled();
   });
 });

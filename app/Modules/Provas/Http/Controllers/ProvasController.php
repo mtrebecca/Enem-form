@@ -2,6 +2,7 @@
 
 namespace App\Modules\Provas\Http\Controllers;
 
+use App\Modules\Provas\Http\Requests\DefinirRespostaRequest;
 use App\Modules\Provas\Services\ProvasService;
 use App\Support\RequestUserId;
 use Illuminate\Http\JsonResponse;
@@ -21,7 +22,7 @@ class ProvasController
         $prova = $this->provasService->detalhe($id);
 
         if (!$prova) {
-            return response()->json(['message' => 'Prova nao encontrada'], 404);
+            abort(404, 'Prova nao encontrada');
         }
 
         return response()->json($prova);
@@ -48,14 +49,14 @@ class ProvasController
     /**
      * Substitui a resposta da questão na sessão em andamento (primeira escolha ou correção).
      */
-    public function definirResposta(Request $request, int $id, int $questao): JsonResponse
+    public function definirResposta(DefinirRespostaRequest $request, int $id, int $questao): JsonResponse
     {
         $userId = RequestUserId::require($request);
-        $payload = array_merge($request->all(), ['questao_id' => $questao]);
+        $payload = array_merge($request->validated(), ['questao_id' => $questao]);
         $resultado = $this->provasService->responder($id, $userId, $payload);
 
         if (! $resultado) {
-            return response()->json(['message' => 'Sessao de prova nao iniciada'], 422);
+            abort(422, 'Sessao de prova nao iniciada');
         }
 
         return response()->json($resultado);
@@ -67,7 +68,7 @@ class ProvasController
         $resultado = $this->provasService->finalizar($id, $userId);
 
         if (!$resultado) {
-            return response()->json(['message' => 'Sessao de prova nao iniciada'], 422);
+            abort(422, 'Sessao de prova nao iniciada');
         }
 
         return response()->json($resultado);

@@ -14,5 +14,5 @@ export function opcaoClassNames(styles, feedbackMap, respostasMap, questaoId, op
 }
 
 export function feedbackTexto(acertou) {
-  return acertou ? 'Correto.' : 'Incorreto. O gabarito esta destacado em verde.';
+  return acertou ? 'Correto.' : 'Incorreto. O gabarito está destacado em verde.';
 }

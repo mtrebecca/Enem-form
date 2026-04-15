@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Model
 {
-    protected $fillable = ['name', 'email', 'password'];
+    protected $fillable = ['name', 'email', 'password', 'api_token'];
 
-    protected $hidden = ['password'];
+    protected $hidden = ['password', 'api_token'];
 
     public function sessoesProva(): HasMany
     {

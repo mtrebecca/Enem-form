@@ -36,6 +36,16 @@ class TreinoService
         return QuestaoApiPresenter::fromModel($questao);
     }
 
+    public function questaoDoPool(int $questaoId): ?Questao
+    {
+        return Questao::query()
+            ->where('id', $questaoId)
+            ->whereHas('prova', function ($q): void {
+                $q->where('status', 'ativo');
+            })
+            ->first();
+    }
+
     private function baseQuery(?string $disciplina, array $excluirIds)
     {
         $query = Questao::query()

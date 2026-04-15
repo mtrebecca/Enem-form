@@ -2,7 +2,7 @@
 
 namespace App\Modules\Users\Http\Controllers;
 
-use App\Modules\Provas\Services\ProvasService;
+use App\Support\ActiveProvasCatalog;
 use App\Modules\Users\Services\UsersService;
 use App\Support\RequestUserId;
 use Illuminate\Http\JsonResponse;
@@ -12,7 +12,7 @@ class UsersController
 {
     public function __construct(
         private readonly UsersService $usersService,
-        private readonly ProvasService $provasService,
+        private readonly ActiveProvasCatalog $provasCatalog,
     ) {}
 
     public function dashboard(Request $request): JsonResponse
@@ -20,7 +20,7 @@ class UsersController
         $userId = RequestUserId::require($request);
 
         return response()->json([
-            'provas' => $this->provasService->listar(),
+            'provas' => $this->provasCatalog->listar(),
             'historico' => $this->usersService->historico($userId),
         ]);
     }

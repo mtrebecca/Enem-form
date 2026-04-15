@@ -4,18 +4,18 @@ export default function DashboardScreen({ s, provas, historico, user, loading, o
   return (
     <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
       <div className={`${s.card} lg:col-span-2`}>
-        <h2 className="mb-2 text-lg font-semibold">Treino aleatorio</h2>
+        <h2 className="mb-2 text-lg font-semibold">Treino aleatório</h2>
         <p className={`mb-4 text-sm ${s.muted}`}>
-          Questoes sorteadas de todas as areas (banco + simulados). Filtra por disciplina ou misture tudo. Referencia de conferencia
+          Questões sorteadas de todas as áreas (banco + simulados). Filtre por disciplina ou misture tudo. Referência de conferência
           aparece em cada item quando houver.
         </p>
         <button type="button" className={s.btnPrimary} onClick={onTreino} disabled={loading}>
-          Iniciar treino aleatorio
+          Iniciar treino aleatório
         </button>
       </div>
 
       <div className={s.card}>
-        <h2 className="mb-3 text-xl font-semibold">Provas disponiveis</h2>
+        <h2 className="mb-3 text-xl font-semibold">Provas disponíveis</h2>
         <p className={`mb-6 text-sm ${s.muted}`}>Simulados completos (lista oficial na prova).</p>
         <div className="space-y-3">
           {provas.map((prova) => (
@@ -34,7 +34,7 @@ export default function DashboardScreen({ s, provas, historico, user, loading, o
         <h2 className="mb-3 text-xl font-semibold">Minha conta</h2>
         <p className={`text-sm ${s.sub}`}>{user?.nome}</p>
         <p className={`mb-6 text-sm ${s.muted}`}>{user?.email}</p>
-        <h3 className={`mb-2 text-sm font-semibold uppercase tracking-wider ${s.sub}`}>Historico</h3>
+        <h3 className={`mb-2 text-sm font-semibold uppercase tracking-wider ${s.sub}`}>Histórico</h3>
         <div className="space-y-2">
           {historico.length === 0 && <p className={`text-sm ${s.muted}`}>Nenhuma prova finalizada ainda.</p>}
           {historico.map((item) => (

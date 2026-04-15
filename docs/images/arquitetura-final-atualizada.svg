@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+  <defs>
+    <style>
+      .title { font: 700 42px 'Segoe UI', Arial, sans-serif; fill: #111; }
+      .h { font: 700 26px 'Segoe UI', Arial, sans-serif; fill: #111; }
+      .t { font: 20px 'Segoe UI', Arial, sans-serif; fill: #111; }
+      .s { font: 18px 'Segoe UI', Arial, sans-serif; fill: #111; }
+      .box { fill: #fff; stroke: #111; stroke-width: 3; rx: 14; ry: 14; }
+      .arrow { stroke: #111; stroke-width: 3; fill: none; marker-end: url(#m); }
+      .small { fill: #fff; stroke: #111; stroke-width: 2.5; rx: 12; ry: 12; }
+    </style>
+    <marker id="m" markerWidth="10" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0,0 10,4 0,8" fill="#111" />
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="900" fill="#fafafa" />
+  <text x="700" y="70" class="title" text-anchor="middle">ENEM.pratica - estrutura atual</text>
+
+  <rect x="40" y="110" width="600" height="450" class="box" />
+  <text x="65" y="150" class="h">API /api</text>
+  <text x="65" y="185" class="t">POST /auth/register</text>
+  <text x="65" y="215" class="t">POST /auth/login</text>
+  <text x="65" y="245" class="t">POST /auth/logout</text>
+  <text x="65" y="275" class="t">POST /auth/esqueci-senha</text>
+  <text x="65" y="305" class="t">GET /dashboard</text>
+  <text x="65" y="335" class="t">GET /minha-conta</text>
+  <text x="65" y="365" class="t">GET /minha-conta/historico</text>
+  <text x="65" y="395" class="t">GET /provas | GET /provas/{id}</text>
+  <text x="65" y="425" class="t">POST /provas/{id}/iniciar</text>
+  <text x="65" y="455" class="t">GET /provas/{id}/questoes</text>
+  <text x="65" y="485" class="t">PUT /provas/{id}/questoes/{questao}/resposta</text>
+  <text x="65" y="515" class="t">POST /provas/{id}/finalizar</text>
+  <text x="360" y="185" class="t">GET /treino/disciplinas</text>
+  <text x="360" y="215" class="t">GET /treino/questao-aleatoria</text>
+  <text x="360" y="245" class="t">POST /treino/responder</text>
+  <text x="360" y="275" class="t">GET /resultados/{prova_id}</text>
+  <text x="360" y="305" class="t">GET /up</text>
+  <text x="65" y="545" class="s">Auth: Authorization Bearer token (auth:api)</text>
+
+  <rect x="1110" y="110" width="250" height="220" class="box" />
+  <text x="1135" y="150" class="h">SQLite</text>
+  <text x="1135" y="185" class="t">- users</text>
+  <text x="1135" y="215" class="t">- provas</text>
+  <text x="1135" y="245" class="t">- questoes</text>
+  <text x="1135" y="275" class="t">- sessoes_prova</text>
+  <text x="1135" y="305" class="t">- resultados</text>
+
+  <rect x="680" y="380" width="170" height="80" class="small" />
+  <text x="765" y="425" class="t" text-anchor="middle">Login/Cadastro</text>
+
+  <rect x="900" y="380" width="220" height="80" class="small" />
+  <text x="1010" y="415" class="t" text-anchor="middle">Dashboard</text>
+  <text x="1010" y="440" class="s" text-anchor="middle">(provas + historico)</text>
+
+  <rect x="840" y="520" width="230" height="95" class="small" />
+  <text x="955" y="560" class="t" text-anchor="middle">Prova Simulado</text>
+  <text x="955" y="590" class="s" text-anchor="middle">(sessao + paginas)</text>
+
+  <rect x="1110" y="520" width="210" height="95" class="small" />
+  <text x="1215" y="560" class="t" text-anchor="middle">Treino aleatorio</text>
+
+  <rect x="980" y="690" width="260" height="85" class="small" />
+  <text x="1110" y="735" class="t" text-anchor="middle">Resultado por disciplina</text>
+
+  <path d="M850 420 L900 420" class="arrow" />
+  <path d="M1010 460 L955 520" class="arrow" />
+  <path d="M1035 460 L1180 520" class="arrow" />
+  <path d="M980 615 L1065 690" class="arrow" />
+  <path d="M1170 615 L1140 690" class="arrow" />
+
+  <rect x="40" y="600" width="760" height="250" class="box" />
+  <text x="65" y="640" class="h">Estrutura de pastas (resumo)</text>
+  <text x="65" y="680" class="t">app/Modules/{Auth,Users,Provas,Treino,Resultados}/</text>
+  <text x="95" y="710" class="t">- Routes/api.php</text>
+  <text x="95" y="740" class="t">- Http/Controllers</text>
+  <text x="95" y="770" class="t">- Http/Requests</text>
+  <text x="95" y="800" class="t">- Services</text>
+  <text x="95" y="830" class="t">- Models (quando aplicavel)</text>
+  <text x="420" y="710" class="t">app/Http/Requests/ApiFormRequest.php</text>
+  <text x="420" y="740" class="t">resources/js: pages/App.jsx, screens, hooks, api.js</text>
+</svg>

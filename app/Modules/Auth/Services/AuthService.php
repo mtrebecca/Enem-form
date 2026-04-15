@@ -10,19 +10,14 @@ use App\Modules\Auth\Results\RegisterAttempt;
 use App\Modules\Auth\Results\RegisterOutcome;
 use App\Modules\Users\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class AuthService
 {
     public function register(array $payload): RegisterAttempt
     {
         $email = (string) ($payload['email'] ?? '');
-
-        if ($email === '') {
-            return new RegisterAttempt(
-                RegisterOutcome::EmailRequired,
-                'Email e obrigatorio.',
-            );
-        }
+        $senha = (string) ($payload['senha'] ?? '');
 
         if (User::query()->where('email', $email)->exists()) {
             return new RegisterAttempt(
@@ -34,13 +29,14 @@ class AuthService
         $user = User::query()->create([
             'name' => (string) ($payload['nome'] ?? 'Novo Usuario'),
             'email' => $email,
-            'password' => Hash::make((string) ($payload['senha'] ?? '123456')),
+            'password' => Hash::make($senha),
         ]);
+        $token = $this->issueApiToken($user);
 
         return new RegisterAttempt(
             RegisterOutcome::Success,
             'Usuario cadastrado com sucesso',
-            base64_encode("mock-token-{$user->id}"),
+            $token,
             [
                 'id' => $user->id,
                 'nome' => $user->name,
@@ -61,11 +57,12 @@ class AuthService
                 'Credenciais invalidas',
             );
         }
+        $token = $this->issueApiToken($user);
 
         return new LoginAttempt(
             LoginOutcome::Success,
             'Login realizado com sucesso',
-            base64_encode("mock-token-{$user->id}"),
+            $token,
             [
                 'id' => $user->id,
                 'nome' => $user->name,
@@ -74,8 +71,12 @@ class AuthService
         );
     }
 
-    public function logout(): array
+    public function logout(?User $user): array
     {
+        if ($user) {
+            $user->forceFill(['api_token' => null])->save();
+        }
+
         return ['message' => 'Logout realizado com sucesso'];
     }
 
@@ -99,5 +100,13 @@ class AuthService
             $email,
             false,
         );
+    }
+
+    private function issueApiToken(User $user): string
+    {
+        $plainToken = Str::random(60);
+        $user->forceFill(['api_token' => hash('sha256', $plainToken)])->save();
+
+        return $plainToken;
     }
 }

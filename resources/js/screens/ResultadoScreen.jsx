@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function ResultadoScreen({ s, resultado, acertosTotais, onVoltarDashboard, onLimparSessao }) {
+export default function ResultadoScreen({ s, resultado, acertosTotais, onVoltarDashboard }) {
   return (
     <section className={`${s.card} mx-auto w-full max-w-3xl`}>
       <h2 className="text-2xl font-bold">Resultado da prova #{resultado.prova_id}</h2>
@@ -22,9 +22,6 @@ export default function ResultadoScreen({ s, resultado, acertosTotais, onVoltarD
       <div className="mt-6 flex flex-wrap gap-3">
         <button type="button" className={s.btnPrimary} onClick={onVoltarDashboard}>
           Voltar ao dashboard
-        </button>
-        <button type="button" className={s.btnGhost} onClick={onLimparSessao}>
-          Limpar sessao atual
         </button>
       </div>
     </section>

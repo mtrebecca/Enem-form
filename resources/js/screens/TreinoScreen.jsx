@@ -4,24 +4,32 @@ import QuestaoInterativa from '../components/QuestaoInterativa';
 export default function TreinoScreen({
   s,
   loading,
-  treinoDisciplinas,
-  treinoFiltro,
-  treinoQuestao,
-  treinoRespostas,
-  treinoFeedback,
+  flow,
   onBackDashboard,
-  aplicarFiltroTreino,
-  reiniciarRodadaTreino,
-  responderTreino,
-  proximaQuestaoTreino,
 }) {
+  const {
+    treinoDisciplinas,
+    treinoFiltro,
+    treinoQuestao,
+    treinoRespostas,
+    treinoFeedback,
+    treinoResumoRodada,
+    treinoRodadaFinalizada,
+    treinoEhUltimaQuestao,
+    aplicarFiltroTreino,
+    reiniciarRodadaTreino,
+    responderTreino,
+    proximaQuestaoTreino,
+    finalizarRodadaTreino,
+  } = flow;
+
   return (
     <section className={s.card}>
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold">Treino aleatorio</h2>
+          <h2 className="text-xl font-semibold">Treino aleatório</h2>
           <p className={`text-sm ${s.muted}`}>
-            Uma questao por vez. Use &quot;Proxima&quot; para sortear outra sem repetir nesta rodada. &quot;Nova rodada&quot; zera repeticoes.
+            Uma questão por vez. Use &quot;Próxima&quot; para sortear outra sem repetir nesta rodada. &quot;Nova rodada&quot; zera repetições.
           </p>
         </div>
         <button type="button" className={s.btnGhost} onClick={onBackDashboard}>
@@ -38,7 +46,7 @@ export default function TreinoScreen({
             onChange={(e) => aplicarFiltroTreino(e.target.value)}
             disabled={loading}
           >
-            <option value="todas">Todas as areas</option>
+            <option value="todas">Todas as áreas</option>
             {treinoDisciplinas.map((d) => (
               <option key={d} value={d}>
                 {d}
@@ -51,7 +59,19 @@ export default function TreinoScreen({
         </button>
       </div>
 
-      {treinoQuestao && (
+      {treinoRodadaFinalizada && (
+        <article className={`${s.innerCard} mb-6`} role="status">
+          <h3 className="text-lg font-semibold">Resultado da rodada de treino</h3>
+          <p className={`mt-2 text-sm ${s.sub}`}>
+            Questões respondidas: <strong>{treinoResumoRodada.respondidas}</strong>
+          </p>
+          <p className={`mt-1 text-sm ${s.sub}`}>
+            Acertos: <strong>{treinoResumoRodada.acertos}</strong>
+          </p>
+        </article>
+      )}
+
+      {!treinoRodadaFinalizada && treinoQuestao && (
         <>
           <QuestaoInterativa
             s={s}
@@ -60,22 +80,27 @@ export default function TreinoScreen({
             respostasMap={treinoRespostas}
             onOpcao={responderTreino}
           />
-          <button
-            type="button"
-            className={`${s.btnPrimary} mt-6`}
-            onClick={proximaQuestaoTreino}
-            disabled={loading || !treinoFeedback[treinoQuestao.id]}
-          >
-            Proxima questao
-          </button>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              className={s.btnGhost}
+              onClick={proximaQuestaoTreino}
+              disabled={loading || !treinoFeedback[treinoQuestao.id] || treinoEhUltimaQuestao}
+            >
+              Próxima questão
+            </button>
+            <button
+              type="button"
+              className={s.btnPrimary}
+              onClick={finalizarRodadaTreino}
+              disabled={loading || treinoResumoRodada.respondidas < 1}
+            >
+              Finalizar rodada
+            </button>
+          </div>
         </>
       )}
 
-      {!loading && !treinoQuestao && (
-        <p className={`text-sm ${s.muted}`}>
-          Nao foi possivel carregar outra questao. Tente &quot;Nova rodada&quot; ou outro filtro de disciplina.
-        </p>
-      )}
     </section>
   );
 }

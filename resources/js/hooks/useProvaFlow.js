@@ -20,14 +20,18 @@ export function useProvaFlow({ setLoading, setError, refreshDashboard }) {
   const [feedbackPorQuestao, setFeedbackPorQuestao] = useState({});
   const [resultado, setResultado] = useState(null);
 
+  const limparInteracoesProva = useCallback(() => {
+    setRespostas({});
+    setFeedbackPorQuestao({});
+  }, []);
+
   const limparEstadoProva = useCallback(() => {
     setProvaAtual(null);
     setQuestoes([]);
     setQuestoesMeta(META_QUESTOES_INICIAL);
-    setRespostas({});
-    setFeedbackPorQuestao({});
+    limparInteracoesProva();
     setResultado(null);
-  }, []);
+  }, [limparInteracoesProva]);
 
   const iniciarProva = useCallback(
     async (id) => {
@@ -42,8 +46,7 @@ export function useProvaFlow({ setLoading, setError, refreshDashboard }) {
         setProvaAtual(inicio.prova);
         setQuestoes(inicio.questoes.data);
         setQuestoesMeta(inicio.questoes.meta);
-        setRespostas({});
-        setFeedbackPorQuestao({});
+        limparInteracoesProva();
         setResultado(null);
         return true;
       } catch (err) {
@@ -54,7 +57,7 @@ export function useProvaFlow({ setLoading, setError, refreshDashboard }) {
         setLoading(false);
       }
     },
-    [nextFlowSignal, setLoading, setError],
+    [nextFlowSignal, setLoading, setError, limparInteracoesProva],
   );
 
   const responder = useCallback(

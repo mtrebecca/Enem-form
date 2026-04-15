@@ -116,6 +116,8 @@ Prefixo: `/api`
 composer install
 cp .env.example .env
 php artisan key:generate
+mkdir -p storage/framework/{cache/data,sessions,views}
+php artisan optimize:clear
 ```
 
 No Windows (PowerShell), use:
@@ -123,6 +125,10 @@ No Windows (PowerShell), use:
 ```powershell
 Copy-Item .env.example .env
 php artisan key:generate
+New-Item -ItemType Directory -Path storage\framework\cache\data -Force | Out-Null
+New-Item -ItemType Directory -Path storage\framework\sessions -Force | Out-Null
+New-Item -ItemType Directory -Path storage\framework\views -Force | Out-Null
+php artisan optimize:clear
 ```
 
 Criar SQLite:

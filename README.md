@@ -11,7 +11,7 @@ Simulador de provas estilo ENEM com:
 - Autenticação com **Bearer token** (`auth:api`) e `api_token` em hash.
 - Fluxos separados para **simulado** (sessão de prova) e **treino aleatório**.
 - Contrato de erros padronizado (`message + error`) via handler global.
-- Refactor recente para reduzir acoplamento:
+- Reduzir acoplamento:
   - `ActiveProvasCatalog`
   - `QuestaoRespostaEvaluator`
   - `DomainException`
